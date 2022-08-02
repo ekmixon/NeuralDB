@@ -108,8 +108,10 @@ if __name__ == "__main__":
     pd.set_option("display.width", 1000)
     pd.set_option("display.max_columns", None)
 
-    aggr = {"all_": [np.mean, np.std]}
-    aggr.update({k: [np.mean] for k in frame.columns if "type" in k})
+    aggr = {"all_": [np.mean, np.std]} | {
+        k: [np.mean] for k in frame.columns if "type" in k
+    }
+
     pt = pd.pivot_table(
         frame, index=["model", "generator", "retriever", "lr", "steps"], aggfunc=aggr
     )

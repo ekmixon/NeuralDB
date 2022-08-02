@@ -101,7 +101,7 @@ def load_experiment(path):
 if __name__ == "__main__":
     master_file = "resources/v2.4_25/test.jsonl"
 
-    db_sizes = dict()
+    db_sizes = {}
     with open(master_file) as f:
         for db_idx, line in enumerate(f):
             database = json.loads(line)
@@ -151,9 +151,7 @@ if __name__ == "__main__":
 
     graph_keys = ["size_0", "size_1", "size_2-4", "size_5-9", "size_10-19"]
 
-    aggr = {"all_": [np.mean, np.std]}
-    aggr.update({k: [np.mean, np.std] for k in graph_keys})
-
+    aggr = {"all_": [np.mean, np.std]} | {k: [np.mean, np.std] for k in graph_keys}
     pt = pd.pivot_table(
         original_frame,
         index=["model", "generator", "lr", "steps"],

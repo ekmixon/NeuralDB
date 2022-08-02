@@ -100,7 +100,7 @@ def evaluate_ndb_with_ssg(data_file):
         total_exact = 0
 
         # precision
-        if len(ssg_output) == 0:
+        if not ssg_output:
             total_soft = 1
             total_exact = 1
             ssg_count = 1
@@ -111,16 +111,15 @@ def evaluate_ndb_with_ssg(data_file):
             if s in gold_facts or len(s) == 0:
                 total_soft = total_soft + 1
                 total_exact = total_exact + 1
+            elif len(s) > 1 and [s[1], s[0]] in gold_facts:
+                total_soft = total_soft + 1
+                total_exact = total_exact + 1
             else:
-                if len(s) > 1 and [s[1], s[0]] in gold_facts:
-                    total_soft = total_soft + 1
-                    total_exact = total_exact + 1
-                else:
-                    for gold_s in gold_facts:
+                for gold_s in gold_facts:
 
-                        if set(gold_s) <= set(s):
-                            total_soft = total_soft + 1
-                            break
+                    if set(gold_s) <= set(s):
+                        total_soft = total_soft + 1
+                        break
 
         P_soft = P_soft + total_soft / ssg_count
         P_exact = P_exact + total_exact / ssg_count
@@ -155,9 +154,9 @@ def evaluate_ndb_with_ssg(data_file):
     total_r_soft = 0
     total_c = 0
 
-    for t in Ps_exact:
-        print(t + ":")
-        print(Ps_exact[t] / C[t], Rs_exact[t] / C[t])
+    for t, value in Ps_exact.items():
+        print(f"{t}:")
+        print(value / C[t], Rs_exact[t] / C[t])
         print(Ps_soft[t] / C[t], Rs_soft[t] / C[t])
         total_c = total_c + C[t]
         total_r_exact = total_r_exact + Rs_exact[t]
@@ -172,7 +171,7 @@ def evaluate_ndb_with_ssg(data_file):
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
-        parser.error("The file %s does not exist!" % arg)
+        parser.error(f"The file {arg} does not exist!")
     else:
         return arg
 

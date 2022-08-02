@@ -31,9 +31,7 @@ from ndb_data.wikidata_common.wikidata import Wikidata
 
 
 def get_numeric_value(s, r, fact):
-    if "numeric" in fact["parse"][2][1]:
-        return fact["parse"][2][0]
-    return None
+    return fact["parse"][2][0] if "numeric" in fact["parse"][2][1] else None
 
 
 def generate_positive_question(qid, qs, q_heights, height=None):
@@ -68,14 +66,15 @@ def generate_positive_question(qid, qs, q_heights, height=None):
 
 
 def generate_negative_bool(hf, question_template, origianal_hyp):
-    candidate_negatives_1 = []
-    for f in hf.keys():
+    candidate_negatives_1 = [
+        f
+        for f in hf.keys()
         if (
             f[1] == origianal_hyp[1]
             and f[0] != origianal_hyp[0]
             and f[2] != origianal_hyp[2]
-        ):
-            candidate_negatives_1.append(f)
+        )
+    ]
 
     if len(candidate_negatives_1):
         hyp_to_make_negative = list(copy(origianal_hyp))
@@ -156,11 +155,12 @@ def generate_joins_filter(hf, facts, qid, question_template, s, r, o, is_subject
                 wiki.get_by_id_or_uri(o)["english_name"] if o.startswith("Q") else o
             )
             extended_question = [
-                q.replace("$s", modifier if is_subject else subject_name).replace(
-                    "$o", modifier if not is_subject else object_name
-                )
+                q.replace(
+                    "$s", modifier if is_subject else subject_name
+                ).replace("$o", object_name if is_subject else modifier)
                 for q in question_template
             ]
+
 
             hyps = set(hf[found_sro]).union(hf[(s, r, o)])
 
@@ -301,8 +301,11 @@ def generate_derivations(hypotheses_facts, facts):
         # Get the canonical subject/object name
         subject_name = wiki.get_by_id_or_uri(s)["english_name"]
         object_name = (
-            o if not o.startswith("Q") else wiki.get_by_id_or_uri(o)["english_name"]
+            wiki.get_by_id_or_uri(o)["english_name"]
+            if o.startswith("Q")
+            else o
         )
+
 
         question_types = set(final_templates[r].keys()).difference(
             {"fact", "_subject", "_object"}
@@ -375,11 +378,8 @@ def build_questions_for_db(database):
             _, qh, generated_question, generated_answer = generate_positive_question(
                 qid, qs, q_heights
             )
-        except TypeError:
+        except (TypeError, AssertionError):
             continue
-        except AssertionError:
-            continue
-
         # Get the participating IDs of the facts in this Q/A
         ids = set()
         qh1_filtered = []
@@ -422,7 +422,7 @@ def build_questions_for_db(database):
                 continue
             max_height = random.choice(sample_choices)
         else:
-            max_height = random.choice(list(range(0, min(ids) + 1)))
+            max_height = random.choice(list(range(min(ids) + 1)))
 
         # Make a negative question (with a null answer)
         qs_negative = [q for q in qs if all(subfact < max_height for subfact in q[1])]
@@ -431,9 +431,7 @@ def build_questions_for_db(database):
             _, qh2, _, negative_generated_answer = generate_positive_question(
                 qid, qs_negative, q_heights, max_height
             )
-        except TypeError:
-            continue
-        except AssertionError:
+        except (TypeError, AssertionError):
             continue
         # print(generated_question, negative_generated_answer, max_height)
 
@@ -463,7 +461,7 @@ def build_questions_for_db(database):
             )
         )
 
-        # TODO If question is a join then sampling between a joined fact should generate zero output
+            # TODO If question is a join then sampling between a joined fact should generate zero output
 
     # json.dumps({"metadata": {"raw": sampled}, "facts": [f['fact'] for f in sampled]})
 

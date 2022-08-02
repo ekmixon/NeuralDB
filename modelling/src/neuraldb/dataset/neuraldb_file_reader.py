@@ -32,7 +32,7 @@ class NeuralDBFileReader:
         self.instance_generator = instance_generator
 
     def read(self, file_path):
-        logger.info("Reading instances from {}".format(file_path))
+        logger.info(f"Reading instances from {file_path}")
 
         database_count = 0
         with open(file_path) as f:
@@ -48,4 +48,4 @@ class NeuralDBFileReader:
                 if os.getenv("DEBUG", None) is not None and idx > 3:
                     break
 
-        logger.info("Dataset file contains {} databases".format(database_count))
+        logger.info(f"Dataset file contains {database_count} databases")

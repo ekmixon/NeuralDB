@@ -23,10 +23,7 @@ from ndb_data.wikidata_common.wikidata import Wikidata
 
 
 def write_updates(batch_update):
-    bulks = []
-    for k, v in batch_update:
-        bulks.append(UpdateOne(k, v))
-
+    bulks = [UpdateOne(k, v) for k, v in batch_update]
     collection.bulk_write(bulks)
 
 

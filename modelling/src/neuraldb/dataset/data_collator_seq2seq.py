@@ -183,7 +183,7 @@ class DataCollatorForSeq2SeqAllowMetadata:
             )
             master_features["decoder_input_ids"] = decoder_input_ids
 
-        if any(meta for meta in metadata):
+        if any(metadata):
             master_features["metadata"] = metadata
 
         return master_features

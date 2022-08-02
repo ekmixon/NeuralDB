@@ -49,7 +49,6 @@ def check_match(snak, test):
             if f"{snak[0]['amount']} {unit['english_name']}" == test:
                 return True
 
-        return False
     else:
         if "time" in snak[0] and "precision" in snak[0]:
 
@@ -63,28 +62,27 @@ def check_match(snak, test):
                 return False
 
             if snak[0]["precision"] == 9:  # Year
-                return matches.group(1) in test
+                return matches[1] in test
             elif snak[0]["precision"] == 11:  # Year month date
                 return (
-                    matches.group(1) in test
-                    and calendar.month_name[int(matches.group(2))] in test
-                    and matches.group(3) in test
+                    matches[1] in test
+                    and calendar.month_name[int(matches[2])] in test
+                    and matches[3] in test
                 )
+
             elif snak[0]["precision"] == 10:  # Year month
-                return (
-                    matches.group(1) in test
-                    and calendar.month_name[int(matches.group(2))] in test
-                )
+                return matches[1] in test and calendar.month_name[int(matches[2])] in test
             elif snak[0]["precision"] == 7:  # Century
-                return matches.group(1)[:-2] in test
+                return matches[1][:-2] in test
             elif snak[0]["precision"] == 8:  # Decade
-                return matches.group(1)[:-1] in test
+                return matches[1][:-1] in test
 
         print("*******")
         print(test)
         print(snak)
         print("*******")
-        return False
+
+    return False
 
 
 if __name__ == "__main__":

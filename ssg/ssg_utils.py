@@ -63,11 +63,6 @@ def create_dataset(db):
                 if len(g) <= 1:
                     state = [q["query"], context[g[0]]]
 
-                    pos_act = eos
-                    neg_act = context
-                    item = [state, pos_act, 1]
-                    dataset.append(item)
-                    dataset.extend([[state, n, 0] for n in neg_act])
                 else:
                     g_0 = g[0]
                     g_1 = g[1]
@@ -87,16 +82,14 @@ def create_dataset(db):
                     dataset.extend([[state, n, 0] for n in neg_act])
 
                     state = [q["query"], context[g_0], context[g_1]]
-                    pos_act = eos
-                    neg_act = context
-                    item = [state, pos_act, 1]
-                    dataset.append(item)
-                    dataset.extend([[state, n, 0] for n in neg_act])
-
+                pos_act = eos
+                neg_act = context
+                item = [state, pos_act, 1]
+                dataset.append(item)
+                dataset.extend([[state, n, 0] for n in neg_act])
     return dataset
 
 
 def prepare_tokenizer(tokenizer):
-    special_tokens = []
-    special_tokens.extend(["<sep>", "<SEP>", "<eos>", "[SEP]"])
+    special_tokens = ["<sep>", "<SEP>", "<eos>", "[SEP]"]
     tokenizer.add_special_tokens({"additional_special_tokens": special_tokens})

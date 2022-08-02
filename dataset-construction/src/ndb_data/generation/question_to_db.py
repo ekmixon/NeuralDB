@@ -54,21 +54,20 @@ def try_numeric(item):
 
 
 def convert_comparable(item):
-    if try_numeric(item):
-        item = item.replace("percent", "").strip()
-        item = item.replace("trainset", "").strip()
-        item = item.replace("tonne", "").strip()
-        item = item.replace("kg", "").strip()
-        item = item.replace("gramme", "").strip()
-        item = item.replace("kilogramme", "").strip()
-        item = item.replace("metre", "").strip()
-        item = item.replace("kilometre", "").strip()
-        item = item.replace("pound", "").strip()
-        item = item.replace("ounce", "").strip()
-
-        return float(item.replace("numeric", ""))
-    else:
+    if not try_numeric(item):
         return item
+    item = item.replace("percent", "").strip()
+    item = item.replace("trainset", "").strip()
+    item = item.replace("tonne", "").strip()
+    item = item.replace("kg", "").strip()
+    item = item.replace("gramme", "").strip()
+    item = item.replace("kilogramme", "").strip()
+    item = item.replace("metre", "").strip()
+    item = item.replace("kilometre", "").strip()
+    item = item.replace("pound", "").strip()
+    item = item.replace("ounce", "").strip()
+
+    return float(item.replace("numeric", ""))
 
 
 def read_questions_into_dict(questions_file):
@@ -156,7 +155,7 @@ def maybe_split(keys):
 
 def generate_answers(question_text, question_type, question_facts):
     assert all(q["qid"].startswith(question_type) for q in question_facts)
-    answer_keys = dict()
+    answer_keys = {}
     if question_type == "argmin":
         # get all keys and find the key with the smallest count
         answers = defaultdict(list)
@@ -184,26 +183,24 @@ def generate_answers(question_text, question_type, question_facts):
 
         if not len(answers):
             return [None]
+        if not numeric_answers:
+            best = sorted(answers.items(), key=lambda a: len(a[1]), reverse=False)
+            lowest = len(best[0][1])
+            best_answers = {k: v for k, v in best if len(v) == lowest}
         else:
-            if not numeric_answers:
-                best = sorted(answers.items(), key=lambda a: len(a[1]), reverse=False)
-                lowest = len(best[0][1])
-                best_answers = {k: v for k, v in best if len(v) == lowest}
-            else:
-                if len(set(type(a[1][0][0]) for a in answers.items())) > 1:
-                    print(question)
-                    print([a[1][0][0] for a in answers.items()])
-                best = sorted(answers.items(), key=lambda a: a[1][0][0], reverse=False)
-                lowest = best[0][1][0]
-                best_answers = {k: v for k, v in best if v[0] == lowest}
-            return list(
-                [
-                    answer_keys[k]
-                    if k in answer_keys and answer_keys[k] is not None
-                    else k
-                    for k in best_answers.keys()
-                ]
-            )
+            if len({type(a[1][0][0]) for a in answers.items()}) > 1:
+                print(question)
+                print([a[1][0][0] for a in answers.items()])
+            best = sorted(answers.items(), key=lambda a: a[1][0][0], reverse=False)
+            lowest = best[0][1][0]
+            best_answers = {k: v for k, v in best if v[0] == lowest}
+        return [
+            answer_keys[k]
+            if k in answer_keys and answer_keys[k] is not None
+            else k
+            for k in best_answers
+        ]
+
 
     elif question_type == "argmax":
         # get all keys and find the key with the smallest count
@@ -233,26 +230,24 @@ def generate_answers(question_text, question_type, question_facts):
 
         if not len(answers):
             return [None]
+        if not numeric_answers:
+            best = sorted(answers.items(), key=lambda a: len(a[1]), reverse=True)
+            highest = len(best[0][1])
+            best_answers = {k: v for k, v in best if len(v) == highest}
         else:
-            if not numeric_answers:
-                best = sorted(answers.items(), key=lambda a: len(a[1]), reverse=True)
-                highest = len(best[0][1])
-                best_answers = {k: v for k, v in best if len(v) == highest}
-            else:
-                if len(set(type(a[1][0][0]) for a in answers.items())) > 1:
-                    print(question)
-                    print([a[1][0][0] for a in answers.items()])
-                best = sorted(answers.items(), key=lambda a: a[1][0][0], reverse=True)
-                highest = best[0][1][0]
-                best_answers = {k: v for k, v in best if v[0] == highest}
-            return list(
-                [
-                    answer_keys[k]
-                    if k in answer_keys and answer_keys[k] is not None
-                    else k
-                    for k in best_answers.keys()
-                ]
-            )
+            if len({type(a[1][0][0]) for a in answers.items()}) > 1:
+                print(question)
+                print([a[1][0][0] for a in answers.items()])
+            best = sorted(answers.items(), key=lambda a: a[1][0][0], reverse=True)
+            highest = best[0][1][0]
+            best_answers = {k: v for k, v in best if v[0] == highest}
+        return [
+            answer_keys[k]
+            if k in answer_keys and answer_keys[k] is not None
+            else k
+            for k in best_answers
+        ]
+
 
     elif question_type == "min":
         # get all keys and find the key with the smallest count
@@ -305,7 +300,7 @@ def generate_answers(question_text, question_type, question_facts):
         for question in question_facts:
             v = question["generated"]["derivation"]
             assert "[SEP]" not in v, v
-            assert v == "TRUE" or v == "FALSE"
+            assert v in ["TRUE", "FALSE"]
             answers.add(convert_comparable(v))
 
         return list(answers) if len(answers) else [None]
@@ -337,7 +332,7 @@ def sample_databases(
 
         # Iterate through questions and make DBs containing facts only
         while len(db) < db_target_size:
-            current_indexes = set(f["idx"] for f in db)
+            current_indexes = {f["idx"] for f in db}
 
             # First pick whether we are adding a singleton, short, medium or long query
             question_set = random.choices(partitioned_questions, weights=sample_probs)[
@@ -359,7 +354,7 @@ def sample_databases(
                     filter(lambda f: f["idx"] not in current_indexes, sampled_facts)
                 )
 
-        logger.info("Constructed DB of size {} queries".format(len(db)))
+        logger.info(f"Constructed DB of size {len(db)} queries")
         yield db
 
 

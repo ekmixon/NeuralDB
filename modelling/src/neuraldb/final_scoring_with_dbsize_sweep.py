@@ -104,7 +104,7 @@ if __name__ == "__main__":
     for file in dbs:
         master_file = f"resources/{file}/test.jsonl"
 
-        db_sizes = dict()
+        db_sizes = {}
         with open(master_file) as f:
             for db_idx, line in enumerate(f):
                 database = json.loads(line)
@@ -200,8 +200,9 @@ if __name__ == "__main__":
                     & (frame.lr == lr)
                     & (frame.generator == gene)
                     & (frame.dataset == db)
-                ][k + ".mean"]
+                ][f"{k}.mean"]
             )
+
 
             stds.extend(
                 frame[
@@ -209,8 +210,9 @@ if __name__ == "__main__":
                     & (frame.lr == lr)
                     & (frame.generator == gene)
                     & (frame.dataset == db)
-                ][k + ".std"]
+                ][f"{k}.std"]
             )
+
 
         all_series.append(series)
         all_stds.append(stds)
@@ -244,8 +246,9 @@ if __name__ == "__main__":
                     & (frame.generator == gene)
                     & (frame.retriever == retr)
                     & (frame.dataset == db)
-                ][k + ".mean"]
+                ][f"{k}.mean"]
             )
+
 
             stds.extend(
                 frame[
@@ -254,8 +257,9 @@ if __name__ == "__main__":
                     & (frame.generator == gene)
                     & (frame.retriever == retr)
                     & (frame.dataset == db)
-                ][k + ".std"]
+                ][f"{k}.std"]
             )
+
 
         if len(series) > 6:
             all_series.append(series[1:])

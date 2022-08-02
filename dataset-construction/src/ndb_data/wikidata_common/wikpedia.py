@@ -26,7 +26,4 @@ class Wikipedia(MongoDataSource):
 
     def resolve_redirect(self, names):
         results = self.collection.find({"title": {"$in": names}})
-        new_search = []
-        for res in results:
-            new_search.append(res["target"])
-        return new_search
+        return [res["target"] for res in results]

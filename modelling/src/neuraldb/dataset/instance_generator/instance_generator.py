@@ -50,7 +50,7 @@ class InstanceGenerator(abc.ABC):
         self.test_mode = test_mode
         self.subsampler = subsampler
 
-        logger.info("Generating instances with {} tokenizer".format(repr(tokenizer)))
+        logger.info(f"Generating instances with {repr(tokenizer)} tokenizer")
         self.tokenizer = tokenizer
 
         logger.info("Adding special token types")
@@ -231,13 +231,16 @@ class InstanceGenerator(abc.ABC):
             for context_str in context_strs
         ]
 
-        encoded = {}
-        encoded["context_ids"] = [
-            encoded_context["input_ids"] for encoded_context in encoded_contexts
-        ]
-        encoded["context_mask"] = [
-            encoded_context["attention_mask"] for encoded_context in encoded_contexts
-        ]
+        encoded = {
+            "context_ids": [
+                encoded_context["input_ids"]
+                for encoded_context in encoded_contexts
+            ],
+            "context_mask": [
+                encoded_context["attention_mask"]
+                for encoded_context in encoded_contexts
+            ],
+        }
 
         if "output" in example:
             output_strs = [
@@ -259,9 +262,6 @@ class InstanceGenerator(abc.ABC):
         return encoded
 
     def maybe_decorate_with_metadata(self, instance, query_obj):
-        if False and not self.test_mode:
-            return instance
-
         if "metadata" not in instance:
             instance["metadata"] = {}
 

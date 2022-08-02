@@ -27,7 +27,7 @@ def merge_type(query_type):
 
 
 def get_bool_ans(answers):
-    return "NULL" if not len(answers) else ("TRUE" if "TRUE" in answers else "FALSE")
+    return ("TRUE" if "TRUE" in answers else "FALSE") if len(answers) else "NULL"
 
 
 if __name__ == "__main__":
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         print(k, v)
 
     print()
-    for i in range(0, 20):
+    for i in range(20):
         print(i, support_set_size_counter[i])
 
     print(total_queries, total_dbs)

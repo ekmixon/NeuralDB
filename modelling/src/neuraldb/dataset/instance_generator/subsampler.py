@@ -27,20 +27,15 @@ class Subsampler:
 
     #
     def maybe_drop_sample(self, query):
-        if query["type"] in self.sample_types:
-            sample_rate = self.sample_types[query["type"]]
-            rand = random.random()
+        if query["type"] not in self.sample_types:
+            return False
+        sample_rate = self.sample_types[query["type"]]
+        rand = random.random()
 
-            if isinstance(sample_rate, list):
-                if not len(query["answer"]):
-                    sample_rate = sample_rate[2]
-                else:
-                    if "TRUE" in query["answer"]:
-                        sample_rate = sample_rate[0]
-                    else:
-                        sample_rate = sample_rate[1]
-
-            # Drop sample if needed
-            return rand < sample_rate
-
-        return False
+        if isinstance(sample_rate, list):
+            if not len(query["answer"]):
+                sample_rate = sample_rate[2]
+            else:
+                sample_rate = sample_rate[0] if "TRUE" in query["answer"] else sample_rate[1]
+        # Drop sample if needed
+        return rand < sample_rate

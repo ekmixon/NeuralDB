@@ -30,7 +30,7 @@ from ssg_utils import read_NDB, create_dataset
 
 def is_valid_folder(parser, arg):
     if not os.path.exists(arg):
-        parser.error("The file %s does not exist!" % arg)
+        parser.error(f"The file {arg} does not exist!")
     else:
         return arg
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # read the train data
     name = "train"
-    data_file = folder + "/" + name + ".jsonl"
+    data_file = f"{folder}/{name}.jsonl"
     db = read_NDB(data_file)
     dataset = create_dataset(db)
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     # read the dev data
     name = "dev"
-    data_file = folder + "/" + name + ".jsonl"
+    data_file = f"{folder}/{name}.jsonl"
     db = read_NDB(data_file)
     dataset = create_dataset(db)
 

@@ -119,7 +119,10 @@ if __name__ == "__main__":
                         ]
                         best_post = np.argmax(scores)
                         original_subject_name = all_grams[best_post]
-                        if scores[best_post] < 0.5 or all_grams[best_post] == "name":
+                        if (
+                            scores[best_post] < 0.5
+                            or original_subject_name == "name"
+                        ):
                             continue
 
                         instance["fact"] = " ".join(toks)
@@ -164,7 +167,10 @@ if __name__ == "__main__":
                         best_post = np.argmax(scores)
 
                         original_object_name = all_grams[best_post]
-                        if scores[best_post] < 0.5 or all_grams[best_post] == "name":
+                        if (
+                            scores[best_post] < 0.5
+                            or original_object_name == "name"
+                        ):
                             continue
 
                         instance["fact"] = " ".join(toks)

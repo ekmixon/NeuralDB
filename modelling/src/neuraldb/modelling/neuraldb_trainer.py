@@ -372,8 +372,9 @@ class NeuralDBTrainer(Seq2SeqTrainer):
             "num_beams": self._num_beams
             if self._num_beams is not None
             else self.model.config.num_beams,
-            "synced_gpus": True if is_deepspeed_zero3_enabled() else False,
+            "synced_gpus": bool(is_deepspeed_zero3_enabled()),
         }
+
 
         if "context_ids" in inputs:
             gen_kwargs["context_ids"] = inputs["context_ids"]

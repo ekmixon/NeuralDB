@@ -56,9 +56,12 @@ def get_bool_breakdown(answers):
 def get_file_stats(file, drop_argmax_chance=None):
     stats = defaultdict(lambda: defaultdict(int))
     for instance in tqdm(get_instances_from_file(file)):
-        if drop_argmax_chance and instance["type"] in ["argmax", "argmin"]:
-            if random.randint(0, 100) < drop_argmax_chance * 100:
-                continue
+        if (
+            drop_argmax_chance
+            and instance["type"] in ["argmax", "argmin"]
+            and random.randint(0, 100) < drop_argmax_chance * 100
+        ):
+            continue
 
         stats["type"][instance["type"]] += 1
         stats["relation"][instance["relation"]] += 1

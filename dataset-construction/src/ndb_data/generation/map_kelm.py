@@ -44,10 +44,7 @@ def clean_title(name):
 
 
 def find_longest_match(searches, search_key, restrict_relation=False):
-    search_toks = []
-    for s in searches:
-        search_toks.append(s[1])
-
+    search_toks = [s[1] for s in searches]
     ents = wikidata.find_custom(search_key, search_toks)
     highest_query_index = None
 
@@ -95,9 +92,7 @@ def resolve_redirect(searches):
 
 
 def final_period(item):
-    if item[-1] != "." and "." in item:
-        return item + "."
-    return item
+    return f"{item}." if item[-1] != "." and "." in item else item
 
 
 def lookup_entity(searches):
@@ -139,10 +134,10 @@ def get_longest(toks, start, restrict_relation=False):
         if tok_len < start:
             continue
 
-        if len(searches) == 0 and (tok.startswith("+") or tok == "+"):
+        if not searches and ((tok.startswith("+") or tok == "+")):
             return clean(" ".join(toks[tok_len:])), "numeric", start, tok_len
 
-        search_str += tok + " "
+        search_str += f"{tok} "
         query = clean(search_str).strip()
         searches.append((tok_len, query))
 
@@ -170,19 +165,20 @@ def try_recovery(name):
         name,
     )
     if date_groups is not None:
-        year = date_groups.group(3)
-        month = date_groups.group(2)
-        day = date_groups.group(1)
+        year = date_groups[3]
+        month = date_groups[2]
+        day = date_groups[1]
 
         if day != "00":
-            return (date_groups.group(0), {"day": day, "month": month, "year": year})
+            return date_groups[0], {"day": day, "month": month, "year": year}
         elif month is not None:
-            return (
-                " ".join((date_groups.group(2), date_groups.group(3))),
-                {"year": year, "month": month},
-            )
+            return " ".join((date_groups[2], date_groups[3])), {
+                "year": year,
+                "month": month,
+            }
+
         else:
-            return (date_groups.group(3), {"year": year})
+            return date_groups[3], {"year": year}
 
     searches = [
         [0, clean(name)],
@@ -242,14 +238,14 @@ def resolve_first_ref(ref):
             # Fix previous resolution
             if prev_end != startptr:
                 recovered = try_recovery(" ".join(toks[:startptr]))
-                if recovered is not None:
-                    parsed[-2] = recovered
-                else:
+                if recovered is None:
 
                     print(f"Failed to fix {ref}")
                     print(parsed)
                     del parsed[-2]
 
+                else:
+                    parsed[-2] = recovered
             elif len(parsed) >= 3:
                 # Fix this resolution
                 aa = clean(" ".join(toks[startptr:])).split()
@@ -266,14 +262,13 @@ def resolve_first_ref(ref):
             if len(parsed) >= 3:
                 break
 
-        else:
-            if len(parsed) > 1:
-                print(ref)
-                print("Early stop")
-                print(toks[next_id:])
-                print(parsed)
-                print()
-                break
+        elif len(parsed) > 1:
+            print(ref)
+            print("Early stop")
+            print(toks[next_id:])
+            print(parsed)
+            print()
+            break
 
     return parsed
 
@@ -282,15 +277,13 @@ def resolve_later_ref(subject, ref):
     ref = ref.replace("$COMMA$", ",")
     toks = ref.split()
 
-    parsed = []
     next_id = 0
     is_relation = True
 
     iteration = 0
     prev_end = 0
 
-    parsed.append(subject)
-
+    parsed = [subject]
     while next_id < len(toks) and iteration <= 2:
         iteration += 1
 
@@ -310,14 +303,14 @@ def resolve_later_ref(subject, ref):
             # Fix previous resolution
             if prev_end != startptr:
                 recovered = try_recovery(" ".join(toks[:startptr]))
-                if recovered is not None:
-                    parsed[-2] = recovered
-                else:
+                if recovered is None:
 
                     print(f"Failed to fix (later) {ref}")
                     print(parsed)
                     del parsed[-2]
 
+                else:
+                    parsed[-2] = recovered
             elif len(parsed) >= 3:
                 # Fix this resolution
                 aa = clean(" ".join(toks[startptr:])).split()
@@ -334,14 +327,13 @@ def resolve_later_ref(subject, ref):
             if len(parsed) >= 3:
                 break
 
-        else:
-            if len(parsed) > 1:
-                print(ref)
-                print("Early stop")
-                print(toks[next_id:])
-                print(parsed)
-                print()
-                break
+        elif len(parsed) > 1:
+            print(ref)
+            print("Early stop")
+            print(toks[next_id:])
+            print(parsed)
+            print()
+            break
 
     return parsed
 

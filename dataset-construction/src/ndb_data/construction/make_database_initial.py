@@ -42,13 +42,13 @@ def normalize_subject(subject_name, fact):
     if subject_name is None:
         return None
 
-    skip = {"is", "a", "of", "between", "on", "in"}
-
     n = NormalizedLevenshtein()
     mixed_case_subject = not subject_name.islower()
     if mixed_case_subject and subject_name not in fact:
         toks = word_tokenize(fact)
         all_grams = []
+        skip = {"is", "a", "of", "between", "on", "in"}
+
         for i in range(1, len(toks)):
             all_grams.extend(" ".join(a) for a in ngrams(toks, i) if a[0] not in skip)
 
@@ -56,7 +56,7 @@ def normalize_subject(subject_name, fact):
         best_post = int(np.argmax(scores))
 
         original_subject_name = all_grams[best_post]
-        if scores[best_post] < 0.5 or all_grams[best_post] == "name":
+        if scores[best_post] < 0.5 or original_subject_name == "name":
             return None
 
         fact = " ".join(toks)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     by_object = defaultdict(list)
     by_relation = defaultdict(list)
 
-    cache_files = glob.glob(args.cache_dir + "/*")
+    cache_files = glob.glob(f"{args.cache_dir}/*")
     for cache_file in cache_files:
 
         start_idx = len(loaded)
@@ -112,10 +112,11 @@ if __name__ == "__main__":
     print(len(all_subjects), len(all_objects), len(all_relations))
 
     # Make train/dev/test split
-    number_to_make = dict()
-    number_to_make["train"] = args.num_dbs_to_make
-    number_to_make["dev"] = max(5, args.num_dbs_to_make // 10)
-    number_to_make["test"] = max(5, args.num_dbs_to_make // 10)
+    number_to_make = {
+        "train": args.num_dbs_to_make,
+        "dev": max(5, args.num_dbs_to_make // 10),
+        "test": max(5, args.num_dbs_to_make // 10),
+    }
 
     all_entities = list(set(all_subjects).union(set(all_objects)))
     random.shuffle(all_entities)
@@ -128,13 +129,13 @@ if __name__ == "__main__":
     p2 = math.floor(len(all_entities) * 0.85)
     tr, de, te = all_entities[:p1], all_entities[p1:p2], all_entities[p2:]
 
-    split_subjects["train"] = set([a for a in tr if a in by_subject])
-    split_subjects["dev"] = set([a for a in de if a in by_subject])
-    split_subjects["test"] = set([a for a in te if a in by_subject])
+    split_subjects["train"] = {a for a in tr if a in by_subject}
+    split_subjects["dev"] = {a for a in de if a in by_subject}
+    split_subjects["test"] = {a for a in te if a in by_subject}
 
-    split_objects["train"] = set([a for a in tr if a in by_object])
-    split_objects["dev"] = set([a for a in de if a in by_object])
-    split_objects["test"] = set([a for a in te if a in by_object])
+    split_objects["train"] = {a for a in tr if a in by_object}
+    split_objects["dev"] = {a for a in de if a in by_object}
+    split_objects["test"] = {a for a in te if a in by_object}
 
     for split in ["train", "dev", "test"]:
         for rel, facts in by_relation.items():
@@ -154,8 +155,8 @@ if __name__ == "__main__":
     print([(k, len(v)) for k, v in split_by_relation["test"].items()])
 
     for split in ["train", "dev", "test"]:
-        with open(args.out_file + "_" + split, "w+") as of:
-            for db_id in tqdm(
+        with open(f"{args.out_file}_{split}", "w+") as of:
+            for _ in tqdm(
                 range(number_to_make[split]), total=number_to_make[split]
             ):
                 # print(f"Building database {db_id}")

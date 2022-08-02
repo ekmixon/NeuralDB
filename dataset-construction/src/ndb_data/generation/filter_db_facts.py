@@ -33,10 +33,8 @@ if __name__ == "__main__":
 
     os.makedirs(args.out_dir, exist_ok=True)
 
-    for file in glob.glob(args.in_dir + "/*"):
-        with open(file) as f, open(
-            args.out_dir + "/" + os.path.basename(file), "w+"
-        ) as of:
+    for file in glob.glob(f"{args.in_dir}/*"):
+        with open(file) as f, open(f"{args.out_dir}/{os.path.basename(file)}", "w+") as of:
             sizes = []
             for line in tqdm(f, desc=file):
                 db = json.loads(line)

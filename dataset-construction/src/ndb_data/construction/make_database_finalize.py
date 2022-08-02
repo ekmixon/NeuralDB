@@ -62,10 +62,8 @@ def bring_extra_facts(instance, extra, additional_list, search_id, is_subj):
             continue
 
         # If we're adding duplicate facts, then we're undoing the need for joins. so skip
-        if any([f in instance["valid_hypotheses"] for f in filtered]):
-            continue
-
-        yield found
+        if all(f not in instance["valid_hypotheses"] for f in filtered):
+            yield found
 
 
 if __name__ == "__main__":
@@ -99,6 +97,7 @@ if __name__ == "__main__":
 
     # Go through all databases in the input file
     with open(args.in_file) as f, open(args.out_file, "w+") as of:
+        modifiers = []
         for line in tqdm(f):
             db = json.loads(line)
             local_obs = []
@@ -156,7 +155,6 @@ if __name__ == "__main__":
                     for e in ex_o:
                         extra_kelm_for[hyp].append(e)
 
-                    modifiers = []
                     local_obs.append(hyp[1])
                     original_for[hyp].append(instance)
 
@@ -218,10 +216,7 @@ if __name__ == "__main__":
                 del sampled[dup]
 
             # Add unqiue extra facts
-            others = []
-            for item in db:
-                if item["reference"] not in references:
-                    others.append(item)
+            others = [item for item in db if item["reference"] not in references]
             sampled.extend(
                 random.sample(others, k=min(len(others), target_size - len(sampled)))
             )

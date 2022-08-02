@@ -25,10 +25,10 @@ from tqdm import tqdm
 
 
 def get_size_bin(query):
-    for idx, size in enumerate(size_bins):
-        if len(query) <= size:
-            return idx
-    return len(size_bins)
+    return next(
+        (idx for idx, size in enumerate(size_bins) if len(query) <= size),
+        len(size_bins),
+    )
 
 
 if __name__ == "__main__":
@@ -115,63 +115,49 @@ if __name__ == "__main__":
                         if question["type"] == "argmin":
                             if random.random() < 0.6:
                                 continue
-                        else:
-
-                            if (
+                        elif (
                                 len(question["answer"]) > 2
                                 or len(question["derivations"]) == 1
                             ):
-                                if random.random() < 0.95:
-                                    continue
-                            else:
-                                if random.random() < 0.3:
-                                    continue
+                            if random.random() < 0.95:
+                                continue
+                        elif random.random() < 0.3:
+                            continue
 
                     #
-                    if question["type"] == "bool" and "TRUE" in question["answer"]:
-                        if random.random() < 0.3:
-                            continue
+                    if (
+                        question["type"] == "bool"
+                        and "TRUE" in question["answer"]
+                        and random.random() < 0.3
+                    ):
+                        continue
 
                     # Less than 8 facts
-                    if q_bin == 5:
-                        # Drop half of the facts
-                        if random.random() < 0.5:
-                            continue
+                    if q_bin == 5 and random.random() < 0.5:
+                        continue
 
-                    if q_bin == 4:
-                        # Drop half of the facts
-                        if random.random() < 0.5:
-                            continue
+                    if q_bin == 4 and random.random() < 0.5:
+                        continue
 
-                    if q_bin == 3:
-                        # Drop half of the facts
-                        if random.random() < 0.6:
-                            continue
+                    if q_bin == 3 and random.random() < 0.6:
+                        continue
 
-                    if q_bin == 2:
-                        # Drop half of the facts
-                        if random.random() < 0.9:
-                            continue
+                    if q_bin == 2 and random.random() < 0.9:
+                        continue
 
-                    if q_bin == 1:
-                        # Drop 80% of the facts
+                    if q_bin == 1 and (
+                        question["type"] == "bool"
+                        and random.random() < 0
+                        or question["type"] != "bool"
+                        and random.random() < 0.5
+                    ):
+                        continue
 
-                        if question["type"] == "bool":
-                            if random.random() < 0:
-                                continue
+                    if q_bin == 0 and random.random() < 0.5:
+                        continue
 
-                        else:
-                            if random.random() < 0.5:
-                                continue
-
-                    if q_bin == 0:
-                        # Drop 90% of the facts
-                        if random.random() < 0.5:
-                            continue
-
-                    if q_bin < 4:
-                        if random.random() < 0.6:
-                            continue
+                    if q_bin < 4 and random.random() < 0.6:
+                        continue
 
                     # if (
                     #     question["type"] == "bool"
@@ -238,11 +224,11 @@ if __name__ == "__main__":
     # print(q_type_bin)
 
     print("bins")
-    for i in range(0, 9):
+    for i in range(9):
         print(i, counts_bins[i], complex_counts_bins[i])
 
     print("lens")
-    for i in range(0, 26):
+    for i in range(26):
         print(i, counts_facts[i], complex_counts_facts[i])
 
     for k, v in counts_types.items():

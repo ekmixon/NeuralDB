@@ -43,13 +43,13 @@ def normalize_subject(subject_name, fact):
     if subject_name is None:
         return None
 
-    skip = {"is", "a", "of", "between", "on", "in"}
-
     n = NormalizedLevenshtein()
     mixed_case_subject = not subject_name.islower()
     if mixed_case_subject and subject_name not in fact:
         toks = word_tokenize(fact)
         all_grams = []
+        skip = {"is", "a", "of", "between", "on", "in"}
+
         for i in range(1, len(toks)):
             all_grams.extend(" ".join(a) for a in ngrams(toks, i) if a[0] not in skip)
 
@@ -57,7 +57,7 @@ def normalize_subject(subject_name, fact):
         best_post = int(np.argmax(scores))
 
         original_subject_name = all_grams[best_post]
-        if scores[best_post] < 0.5 or all_grams[best_post] == "name":
+        if scores[best_post] < 0.5 or original_subject_name == "name":
             return None
 
         fact = " ".join(toks)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     # print(final_templates.keys())
     with open(args.in_file) as f:
-        for ix, line in enumerate(tqdm(f, total=args.estimated_size)):
+        for line in tqdm(f, total=args.estimated_size):
             instance = json.loads(line)
             added_id = None
 

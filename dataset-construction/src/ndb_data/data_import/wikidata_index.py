@@ -63,12 +63,11 @@ def get_indexable(instance):
 
 
 def index_dump(dump):
-    for idx, line in enumerate(dump):
+    for line in dump:
         try:
             yield from get_indexable(json.loads(line))
         except JSONDecodeError as e:
             print(e)
-            pass
 
 
 if __name__ == "__main__":

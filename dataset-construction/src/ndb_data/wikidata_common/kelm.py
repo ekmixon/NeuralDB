@@ -25,11 +25,9 @@ class KELMMongo(MongoDataSource):
         self.collection = self.db["kelm"]
 
     def find_entity(self, entity):
-        results = self.collection.find({"entities": entity})
-        return results
+        return self.collection.find({"entities": entity})
 
     def find_entity_rel(self, entity, rels):
-        results = self.collection.find(
+        return self.collection.find(
             {"entities": entity, "relations": {"$in": list(rels)}}
         )
-        return results

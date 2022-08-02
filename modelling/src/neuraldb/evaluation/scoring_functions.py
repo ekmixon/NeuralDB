@@ -91,6 +91,8 @@ def breakdown_score(key, all_actual, all_predicted, metadata, scoring_function):
         assert running_score[metadatum[key]] <= num_instances[metadatum[key]]
 
     return {
-        key: running_score[key] / num_instances[key] if num_instances[key] > 0 else 0.0
-        for key in num_instances.keys()
+        key: running_score[key] / num_instances[key]
+        if num_instances[key] > 0
+        else 0.0
+        for key in num_instances
     }

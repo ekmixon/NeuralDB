@@ -29,7 +29,7 @@ from ssg_utils import read_NDB
 
 def is_valid_folder(parser, arg):
     if not os.path.exists(arg):
-        parser.error("The file %s does not exist!" % arg)
+        parser.error(f"The file {arg} does not exist!")
     else:
         return arg
 
@@ -77,9 +77,9 @@ if __name__ == "__main__":
     softmax = nn.Softmax()
     for threshold in thresholds:
         for name in names:
-            data_file = folder + "/" + name + ".jsonl"
+            data_file = f"{folder}/{name}.jsonl"
 
-            outfile = folder + "/" + name + "_" + str(threshold) + "_ssg_sup.json"
+            outfile = f"{folder}/{name}_{str(threshold)}_ssg_sup.json"
             dataset = read_NDB(data_file)
             ssg_data = []
 
@@ -97,10 +97,9 @@ if __name__ == "__main__":
                     states = [[[-1, q["query"]]]]
                     new_states = []
                     final_sets = []
-                    a_reps = ctx_reps[0: q["height"] + 2]
+                    a_reps = ctx_reps[:q["height"] + 2]
 
-                    for t in range(2):
-
+                    for _ in range(2):
                         while states:
                             state = states.pop(0)
 
@@ -140,18 +139,19 @@ if __name__ == "__main__":
                             and [facts[1], facts[0]] not in final_sets
                         ):
                             final_sets.append(st[1:])
-                    data = {}
-                    data["db_id"] = db_count
-                    data["question_id"] = q_count
-                    data["query"] = q["query"]
-                    data["context_height"] = q["height"]
-                    data["gold_facts"] = q["facts"]
-                    data["answer"] = q["answer"]
-                    data["metadata"] = {
-                        "relation_type": q["relation"],
-                        "query_type": q["type"],
+                    data = {
+                        "db_id": db_count,
+                        "question_id": q_count,
+                        "query": q["query"],
+                        "context_height": q["height"],
+                        "gold_facts": q["facts"],
+                        "answer": q["answer"],
+                        "metadata": {
+                            "relation_type": q["relation"],
+                            "query_type": q["type"],
+                        },
+                        "ssg_output": final_sets,
                     }
-                    data["ssg_output"] = final_sets
 
                     ssg_data.append(data)
                     q_count = q_count + 1

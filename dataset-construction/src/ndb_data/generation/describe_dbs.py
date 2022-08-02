@@ -24,8 +24,7 @@ from collections import Counter
 def read_databases(file):
     with open(file) as f:
         for line in f:
-            instance = json.loads(line)
-            yield instance
+            yield json.loads(line)
 
 
 if __name__ == "__main__":

@@ -107,9 +107,14 @@ def get_baseline_evaluation(data_args, tokenizer, generator):
             )
 
         sampled_ids = random.sample(
-            list([idx for idx, meta in enumerate(metadata) if meta["type"] == "bool"]),
+            [
+                idx
+                for idx, meta in enumerate(metadata)
+                if meta["type"] == "bool"
+            ],
             10,
         )
+
         for id in sampled_ids:
             logger.info(
                 f"Example prediction  \n"

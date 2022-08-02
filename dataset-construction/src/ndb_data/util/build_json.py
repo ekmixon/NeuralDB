@@ -36,9 +36,14 @@ def read_csv(f):
         if len(template["fact"]):
             templates["fact"].add(template["fact"])
 
-        if len(template["bool"]):
-            if template["bool_answer"].lower() in ["true", "t", "1", "yes", "y"]:
-                templates["bool"].add((template["bool"], template["bool_answer"]))
+        if len(template["bool"]) and template["bool_answer"].lower() in [
+            "true",
+            "t",
+            "1",
+            "yes",
+            "y",
+        ]:
+            templates["bool"].add((template["bool"], template["bool_answer"]))
 
         if len(template["set"]):
             templates["set"].add((template["set"], template["set_projection"]))
@@ -70,14 +75,13 @@ def swap_so(statement):
 
 def make_symmetric(k, templates):
 
-    if not k.startswith("_"):
-        out = []
-        out.extend(templates)
-        out.extend([(swap_so(t[0]), swap_so(t[1])) for t in templates if len(t) == 2])
-        out.extend([swap_so(t) for t in templates if isinstance(t, str)])
-        return out
-    else:
+    if k.startswith("_"):
         return templates
+    out = []
+    out.extend(templates)
+    out.extend([(swap_so(t[0]), swap_so(t[1])) for t in templates if len(t) == 2])
+    out.extend([swap_so(t) for t in templates if isinstance(t, str)])
+    return out
 
 
 if __name__ == "__main__":
@@ -86,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument("version")
     args = parser.parse_args()
     # Read all CSV files in dir
-    files = glob.glob("configs/for_{}/*.csv".format(args.version))
+    files = glob.glob(f"configs/for_{args.version}/*.csv")
     print(files)
 
     all_templates = {}
@@ -94,7 +98,7 @@ if __name__ == "__main__":
         match = re.match(r".*(P[0-9]+).*", file)
 
         if match is not None:
-            name = match.group(1)
+            name = match[1]
 
             with open(file) as f:
                 template = read_csv(f)
@@ -107,5 +111,5 @@ if __name__ == "__main__":
             else:
                 all_templates[name] = template
 
-    with open("configs/generate_{}.json".format(args.version), "w+") as of:
+    with open(f"configs/generate_{args.version}.json", "w+") as of:
         json.dump(all_templates, of, indent=4)
